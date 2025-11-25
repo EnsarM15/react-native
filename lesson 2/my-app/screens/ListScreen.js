@@ -28,12 +28,17 @@ const ListScreen = () => {
           </Text>
         )}
       />
+      <Button
+       style={styles.ListBtn}
+       title="go to main screen"
+    onPress={()=> navigation.navigate("Main")}></Button>
       <TouchableOpacity
       style={styles.touchableBtn}
       onPress={()=>console.log("butoni eshte klikuar",count++)}>
         <Text style={styles.btnText}>click here</Text>
       </TouchableOpacity>
     </View>
+
   );
 };
 
@@ -54,6 +59,10 @@ const styles = StyleSheet.create({
     paddingVertical:20,
     borderRadius:6,
     marginHorizontal:20
+  },
+  ListBtn:{
+    borderRadius:20,
+    backgroundColor:"brown",
   }
 });
 

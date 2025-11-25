@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import reserveScreen from "./screens/reserveScreen";
 
 import MainScreen from "./screens/MainScreen";
 
@@ -12,21 +13,22 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    // <NavigationContainer>
-    //   <Stack.Navigator
-    //     initialRouteName="List"
-    //     screenOptions={{
-    //       title: "App",
-    //     }}
-    //   >
-    //     <Stack.Screen name="Main" component={MainScreen} />
+     <NavigationContainer>
+     <Stack.Navigator
+        initialRouteName="Main"
+        screenOptions={{
+         title: "App",
+        }}
+      >
+        <Stack.Screen name="Main" component={MainScreen} />
 
-    //     <Stack.Screen name="List" component={ListScreen} />
-    //   </Stack.Navigator>
+         <Stack.Screen name="List" component={ListScreen} />
+          <Stack.Screen name="reserve" component={reserveScreen} />
+      </Stack.Navigator>
 
-    //   <StatusBar style="auto" />
-    // </NavigationContainer>
-    <ListScreen></ListScreen>
+      <StatusBar style="auto" />
+     </NavigationContainer>
+ 
   );
 }
 
