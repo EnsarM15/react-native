@@ -14,6 +14,7 @@ import StudentScreen from "./screens/StudentScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import BoxScreen from "./screens/BoxScreen";
 import PostsScreen from "./screens/PostsScreen";
+import AlbumsScreen from "./screens/AlbumsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -37,8 +38,10 @@ export default function App() {
    // <StudentScreen></StudentScreen>
    //<ProfileScreen></ProfileScreen>
   // <BoxScreen></BoxScreen>
-  <PostsScreen></PostsScreen>
-  );
+  //<PostsScreen></PostsScreen>
+ // <AlbumScreen></AlbumScreen>
+<AlbumsScreen></AlbumsScreen>  
+);
 }
 
 const styles = StyleSheet.create({

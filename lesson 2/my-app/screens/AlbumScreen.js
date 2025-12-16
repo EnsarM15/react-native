@@ -1,18 +1,18 @@
 import React from "react";
-import { FlatList ,View,Text} from "react-native";
+import { FlatList ,View,Text} from "react-native-web";
+import { StyleSheet } from "react-native/types_generated/index";
 
-
-class PostsScreen extends React.Component{
+class AlbumScreen extends React.Component{
     constructor(props){
         super(props);
 
         this.state={
-            posts:[],
+            Album:[],
         };
     }
     async componentDidMount(){
         try{
-            const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+            const response = await fetch("https://jsonplaceholder.typicode.com/albums");
             const jsonData= await response.json();
 
             this.setState({posts:jsonData});
@@ -28,18 +28,18 @@ class PostsScreen extends React.Component{
         return(
             <View>
                 <FlatList
-                data={this.state.posts}
-                keyExtractor={(item)=>item.id.toString()}
-                renderItem={({item})=>
+                data={this.state.Album}
+                keyExtractor={(userId)=>item.id.toString()}
+                renderItem={({userId})=>
                 
                 (
-                    <View >
+                    <View style={Styles.Album}>
                         <br></br>
-                        <Text>{item.title}</Text>
-                        <Text>{item.body}</Text>
+                        <Text>{item.userId}</Text>
+                        
                     </View>
                 )
-                }
+            }
                 >
 
 
@@ -52,4 +52,4 @@ class PostsScreen extends React.Component{
 
 }
 
-export default PostsScreen;
+export default AlbumScreen;
