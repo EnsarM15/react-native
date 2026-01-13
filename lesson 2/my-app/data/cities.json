@@ -1,0 +1,47 @@
+[{
+    "id":1,
+    "name":"prishtina",
+    "countryCode":"ks",
+    "population":258163,
+    "description":"kryeqyteti i kosoves"
+},
+
+{
+    "id":2,
+    "name":"peja",
+    "countryCode":"ks",
+    "population":258163,
+    "description":"qyteti ma i bukur"
+},
+
+{
+    "id":3,
+    "name":"prizren",
+    "countryCode":"ks",
+    "population":258163,
+    "description":"qytet"
+},
+
+{
+    "id":4,
+    "name":"malisheva",
+    "countryCode":"ks",
+    "population":258163,
+    "description":"qyteti i kosoves"
+},
+{
+    "id":5,
+    "name":"frenasi",
+    "countryCode":"ks",
+    "population":258163,
+    "description":"qyteti i kosoves"
+},
+{
+    "id":6,
+    "name":"podujeva",
+    "countryCode":"ks",
+    "population":258163,
+    "description":"qytet"
+}
+
+]

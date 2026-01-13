@@ -16,6 +16,7 @@ import BoxScreen from "./screens/BoxScreen";
 import PostsScreen from "./screens/PostsScreen";
 import AlbumsScreen from "./screens/AlbumsScreen";
 import CountrieScreen from "./screens/CountrieScreen";
+import CitiesScreen from "./screens/CitiesScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -42,7 +43,8 @@ export default function App() {
   //<PostsScreen></PostsScreen>
  // <AlbumScreen></AlbumScreen>
 //<AlbumsScreen></AlbumsScreen>
-<CountrieScreen></CountrieScreen>  
+//<CountrieScreen></CountrieScreen>  
+<CitiesScreen></CitiesScreen>
 );
 }
 
