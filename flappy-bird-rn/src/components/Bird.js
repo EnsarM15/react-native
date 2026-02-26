@@ -1,20 +1,19 @@
 import React from "react";
 import { View } from "react-native";
 
-
-const FlappyBird = ({ FlappyBirdBottom }) => {
+const Bird = ({ birdBottom }) => {
   return (
     <View
       style={{
         position: "absolute",
+        width: 50,
         height: 50,
         backgroundColor: "blue",
         left: 100,
-        bottom: FlappyBirdBottom,
+        bottom: birdBottom,
       }}
     />
   );
 };
 
-
-export default FlappyBird;
+export default Bird;
