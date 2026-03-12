@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { View, Text, Image, Button, Alert, StyleSheet } from 'react-native';
 import { post } from '../services/api';
-import { AuthContext } from '../../App';
+import { AuthContext } from '../context/AuthContext';
 
 export default function ProductScreen({ route }) {
   const { product } = route.params;

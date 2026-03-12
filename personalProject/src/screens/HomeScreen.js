@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { get } from '../services/api';
 import ProductCard from '../components/ProductCard';
-import { AuthContext } from '../../App';
+import { AuthContext } from '../context/AuthContext';
 
 export default function HomeScreen({ navigation }) {
   const [products, setProducts] = useState([]);
