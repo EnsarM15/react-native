@@ -30,9 +30,10 @@ export default function RegistrationScreen({ navigation }) {
     setLoading(true);
     try {
       const res = await register(name, email, password, confirmPassword);
-      if (res.success && res.token) {
-        Alert.alert('Success', 'Registration successful! Please login with your new account');
-        navigation?.navigate('Login');
+      if (res.success) {
+        Alert.alert('Success', 'Registration successful! Please login with your new account', [
+          { text: 'OK', onPress: () => navigation?.replace('Login') },
+        ]);
       } else {
         Alert.alert('Registration failed', res.message || 'Could not register');
       }
