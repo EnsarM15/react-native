@@ -36,11 +36,12 @@ if (strlen($password) < 6) {
     exit;
 }
 
-// Database settings - customize to your environment
-$dbHost = '127.0.0.1';
-$dbName = 'personalProject';
-$dbUser = 'root';
-$dbPass = '';
+// Database settings from config
+$config = require __DIR__ . '/config.php';
+$dbHost = $config['dbHost'];
+$dbName = $config['dbName'];
+$dbUser = $config['dbUser'];
+$dbPass = $config['dbPass'];
 
 try {
     $pdo = new PDO("mysql:host=$dbHost;dbname=$dbName;charset=utf8mb4", $dbUser, $dbPass, [

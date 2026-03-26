@@ -1,283 +1,467 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, FlatList, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import ResultScreen from './ResultScreen';
+
+const WORD_LIST = [
+  'REACT', 'NATIVE', 'MOBILE', 'GAMES', 'WORDLE', 'STYLE', 'LOGIC', 'SOLVE',
+  'BRAIN', 'HAPPY', 'GUESS', 'PHONE', 'SMART', 'QUICK', 'WORDS', 'DAILY'
+];
+
+const getRandomWord = () => WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
 
 export default function App() {
-  const [view, setView] = useState('home');
-  const [quizzes, setQuizzes] = useState([
-    {
-      id: '1',
-      title: 'JS Basics',
-      description: 'JS syntax and core concepts',
-      questions: [
-        { id: 'q1', question: 'Which keyword declares a constant in JS?', options: ['var', 'let', 'const', 'function'], answer: 'const' },
-        { id: 'q2', question: 'What is the type of NaN?', options: ['number', 'string', 'object', 'undefined'], answer: 'number' },
-        { id: 'q3', question: 'Which method converts a string to an integer?', options: ['parseInt', 'toString', 'Math.floor', 'parseFloat'], answer: 'parseInt' },
-      ],
-    },
-    {
-      id: '2',
-      title: 'Python Basics',
-      description: 'Python foundational knowledge',
-      questions: [
-        { id: 'q1', question: 'What symbol starts a comment in Python?', options: ['//', '#', '<!--', '%'], answer: '#' },
-        { id: 'q2', question: 'Which data type is immutable?', options: ['list', 'set', 'tuple', 'dict'], answer: 'tuple' },
-        { id: 'q3', question: 'How do you create a list?', options: ['{}', '[]', '()', '<>'], answer: '[]' },
-      ],
-    },
-    {
-      id: '3',
-      title: 'HTML & CSS',
-      description: 'Web styling and markup',
-      questions: [
-        { id: 'q1', question: 'What tag is used for a paragraph?', options: ['<div>', '<p>', '<span>', '<a>'], answer: '<p>' },
-        { id: 'q2', question: 'Which property changes text color?', options: ['font-color', 'color', 'text-color', 'font'], answer: 'color' },
-        { id: 'q3', question: 'How do you add an external stylesheet?', options: ['<css>', '<link rel="stylesheet" href="...">', '<style src="...">', '<script src="...">'], answer: '<link rel="stylesheet" href="...">' },
-      ],
-    },
-    {
-      id: '4',
-      title: 'React Native',
-      description: 'Mobile app building blocks',
-      questions: [
-        { id: 'q1', question: 'Which core component is used for layout in React Native?', options: ['div', 'View', 'Container', 'Layout'], answer: 'View' },
-        { id: 'q2', question: 'How do you style in React Native?', options: ['CSS file', 'StyleSheet.create', 'inline CSS', 'styled-components only'], answer: 'StyleSheet.create' },
-        { id: 'q3', question: 'Which component handles touch events?', options: ['TextInput', 'TouchableOpacity', 'View', 'Image'], answer: 'TouchableOpacity' },
-      ],
-    },
-  ]);
+  const [word, setWord] = useState(getRandomWord());
+  const [guesses, setGuesses] = useState([]);
+  const [currentGuess, setCurrentGuess] = useState('');
+  const [gameOver, setGameOver] = useState(false);
+  const [won, setWon] = useState(false);
+  const [message, setMessage] = useState('');
+  const [screen, setScreen] = useState('game');
 
-  const [newTitle, setNewTitle] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [newQuestions, setNewQuestions] = useState([]);
-  const [newQuestionText, setNewQuestionText] = useState('');
-  const [newOptions, setNewOptions] = useState(['', '', '', '']);
-  const [newAnswer, setNewAnswer] = useState('');
-  const [activeQuiz, setActiveQuiz] = useState(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [lastResult, setLastResult] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const startQuiz = quiz => {
-    setActiveQuiz(quiz);
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setLastResult(null);
-    setView('quiz');
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+  const handleLetterPress = (letter) => {
+    if (gameOver || won || currentGuess.length >= 5) return;
+    setCurrentGuess(currentGuess + letter);
   };
 
-  const handleAnswer = option => {
-    const question = activeQuiz.questions[currentQuestionIndex];
-    const correct = option === question.answer;
-    const nextScore = correct ? score + 1 : score;
-    if (correct) setScore(nextScore);
-    const nextIndex = currentQuestionIndex + 1;
-    if (nextIndex >= activeQuiz.questions.length) {
-      const total = activeQuiz.questions.length;
-      const percent = Math.round((nextScore / total) * 100);
-      let rank = 'Beginner';
-      if (percent >= 90) rank = 'Master';
-      else if (percent >= 75) rank = 'Expert';
-      else if (percent >= 50) rank = 'Intermediate';
+  const handleBackspace = () => {
+    setCurrentGuess(currentGuess.slice(0, -1));
+  };
 
-      setLastResult({
-        quizTitle: activeQuiz.title,
-        correct: nextScore,
-        total,
-        percent,
-        rank,
+  const handleSubmit = () => {
+    if (currentGuess.length !== 5) {
+      setMessage('Word must be 5 letters!');
+      return;
+    }
+
+    const newGuesses = [...guesses, currentGuess];
+    setGuesses(newGuesses);
+
+    if (currentGuess === word) {
+      setWon(true);
+      setGameOver(true);
+      setMessage(`You won! The word was ${word}`);
+      setScreen('result');
+      return;
+    }
+
+    if (newGuesses.length >= 6) {
+      setGameOver(true);
+      setMessage(`Game Over! The word was ${word}`);
+      setScreen('result');
+      return;
+    }
+
+    setCurrentGuess('');
+    setMessage('');
+  };
+
+  const login = async () => {
+    setAuthError('');
+    if (!email || !password) {
+      setAuthError('Email and password required');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1/backend/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
-      setActiveQuiz(null);
-      setView('rank');
-      return;
+      const data = await response.json();
+
+      if (data.success) {
+        setIsLoggedIn(true);
+        setScreen('game');
+        setMessage('');
+      } else {
+        setAuthError(data.message || 'Login failed');
+      }
+    } catch (error) {
+      setAuthError('Unable to connect to backend');
+    } finally {
+      setLoading(false);
     }
-    setCurrentQuestionIndex(nextIndex);
   };
 
-  const addQuestion = () => {
-    if (!newQuestionText || newOptions.some(o => !o) || !newAnswer) {
-      Alert.alert('Validation error', 'Fill all question fields before adding.');
+  const register = async () => {
+    setAuthError('');
+    if (!name || !email || !password || !confirmPassword) {
+      setAuthError('All fields are required');
       return;
     }
-    if (!['A', 'B', 'C', 'D'].includes(newAnswer.toUpperCase())) {
-      Alert.alert('Validation error', 'Correct answer must be A, B, C or D.');
+    if (password !== confirmPassword) {
+      setAuthError('Passwords do not match');
       return;
     }
 
-    const question = {
-      id: Date.now().toString(),
-      question: newQuestionText,
-      options: [...newOptions],
-      answer: newAnswer.toUpperCase(),
-    };
+    setLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1/backend/registration.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, confirmPassword }),
+      });
+      const data = await response.json();
 
-    setNewQuestions(prev => [...prev, question]);
-    setNewQuestionText('');
-    setNewOptions(['', '', '', '']);
-    setNewAnswer('');
+      if (data.success) {
+        setAuthMode('login');
+        setAuthError('Registration success. Please login.');
+      } else {
+        setAuthError(data.message || 'Registration failed');
+      }
+    } catch (error) {
+      setAuthError('Unable to connect to backend');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const addQuiz = () => {
-    if (!newTitle || !newDescription || newQuestions.length === 0) {
-      Alert.alert('Validation error', 'Provide title, description, and at least one question.');
-      return;
-    }
-
-    const quiz = {
-      id: Date.now().toString(),
-      title: newTitle,
-      description: newDescription,
-      questions: newQuestions,
-    };
-
-    const updated = [...quizzes, quiz];
-    persistQuizzes(updated);
-
-    setNewTitle('');
-    setNewDescription('');
-    setNewQuestions([]);
-    setNewQuestionText('');
-    setNewOptions(['', '', '', '']);
-    setNewAnswer('');
-    setView('home');
+  const resetGame = () => {
+    setWord(getRandomWord());
+    setGuesses([]);
+    setCurrentGuess('');
+    setGameOver(false);
+    setWon(false);
+    setMessage('');
+    setScreen('game');
   };
 
-  const renderHome = () => (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Programming Languages Quiz App</Text>
-      <Button title="Create a new quiz" onPress={() => setView('create')} />
-      <View style={{ height: 10 }} />
-      <Button title="About this app" onPress={() => setView('about')} color="#4a5568" />
-      <Text style={styles.subheading}>Available quizzes</Text>
-      <FlatList
-        data={quizzes}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.quizCard} onPress={() => startQuiz(item)}>
-            <Text style={styles.quizTitle}>{item.title}</Text>
-            <Text style={styles.quizMeta}>{item.questions.length} question(s)</Text>
-          </TouchableOpacity>
+  const getLetterColor = (letter) => {
+    if (!guesses.length) return '#888';
+    
+    for (let guess of guesses) {
+      if (guess.includes(letter)) {
+        if (guess[word.indexOf(letter)] === letter && word.includes(letter)) {
+          return '#6aaa64'; // Green
+        }
+        if (word.includes(letter)) {
+          return '#c9b458'; // Yellow
+        }
+        return '#3a3a3c'; // Gray
+      }
+    }
+    return '#888';
+  };
+
+  const getGuessRowColor = (guessIndex, letterIndex) => {
+    const guess = guesses[guessIndex];
+    if (!guess) return '#1e1b16'; // Empty row
+    
+    const letter = guess[letterIndex];
+    if (!letter) return '#1e1b16'; // Empty tile
+
+    if (letter === word[letterIndex]) return '#6aaa64'; // Green - correct position
+    if (word.includes(letter)) return '#c9b458'; // Yellow - wrong position
+    return '#3a3a3c'; // Gray - not in word
+  };
+
+  if (!isLoggedIn) {
+    const isRegister = authMode === 'register';
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.title}>{isRegister ? 'Register' : 'Login'}</Text>
+
+        {isRegister && (
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="Your name"
+              placeholderTextColor="#bbb"
+              style={styles.input}
+            />
+          </View>
         )}
-      />
-    </View>
-  );
 
-  const renderCreate = () => (
-    <ScrollView style={styles.container}>
-      <Text style={styles.heading}>Create Quiz</Text>
-      <TextInput style={styles.input} placeholder="Quiz Title" value={newTitle} onChangeText={setNewTitle} />
-      <TextInput style={styles.input} placeholder="Quiz Description" value={newDescription} onChangeText={setNewDescription} />
-      <Text style={styles.subheading}>New Question</Text>
-      <TextInput style={styles.input} placeholder="Question text" value={newQuestionText} onChangeText={setNewQuestionText} />
-      {newOptions.map((opt, i) => (
-        <TextInput
-          key={i}
-          style={styles.input}
-          placeholder={`Option ${String.fromCharCode(65 + i)}:`}
-          value={opt}
-          onChangeText={text => {
-            const next = [...newOptions];
-            next[i] = text;
-            setNewOptions(next);
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="you@example.com"
+            placeholderTextColor="#bbb"
+            style={styles.input}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor="#bbb"
+            style={styles.input}
+            secureTextEntry
+          />
+        </View>
+
+        {isRegister && (
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Confirm Password</Text>
+            <TextInput
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirm password"
+              placeholderTextColor="#bbb"
+              style={styles.input}
+              secureTextEntry
+            />
+          </View>
+        )}
+
+        {authError ? <Text style={styles.authError}>{authError}</Text> : null}
+
+        <TouchableOpacity
+          style={[styles.button, styles.loginButton]}
+          onPress={isRegister ? register : login}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>{loading ? (isRegister ? 'Registering...' : 'Logging in...') : (isRegister ? 'Register' : 'Login')}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#444', marginTop: 12 }]}
+          onPress={() => {
+            setAuthMode(isRegister ? 'login' : 'register');
+            setAuthError('');
           }}
-        />
-      ))}
-      <TextInput style={styles.input} placeholder="Correct answer (A/B/C/D)" value={newAnswer} onChangeText={setNewAnswer} />
-      <Button title="Add question" onPress={addQuestion} />
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>{isRegister ? 'Already have an account? Login' : 'No account? Register'}</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
-      {newQuestions.length > 0 && (
-        <View style={{ marginTop: 16 }}>
-          <Text style={styles.subheading}>Questions added:</Text>
-          {newQuestions.map((q, i) => (
-            <View key={q.id} style={styles.questionItem}>
-              <Text style={{ color: '#edf2f7' }}>{i + 1}. {q.question}</Text>
-            </View>
+  if (screen === 'result') {
+    return <ResultScreen message={message || 'Game over'} onNewGame={resetGame} />;
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>WORDLE</Text>
+      
+      {/* Game Board */}
+      <View style={styles.board}>
+        {Array(6).fill(0).map((_, rowIndex) => (
+          <View key={rowIndex} style={styles.row}>
+            {Array(5).fill(0).map((_, colIndex) => {
+              const letter = guesses[rowIndex]?.[colIndex] || '';
+              const isCurrentRow = rowIndex === guesses.length;
+              const bgColor = isCurrentRow ? '#1e1b16' : getGuessRowColor(rowIndex, colIndex);
+              
+              return (
+                <View key={colIndex} style={[styles.tile, { backgroundColor: bgColor }]}>
+                  <Text style={styles.tileText}>
+                    {isCurrentRow ? currentGuess[colIndex] || '' : letter}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        ))}
+      </View>
+
+      {/* Message */}
+      {message && <Text style={styles.message}>{message}</Text>}
+
+      {/* Keyboard */}
+      <View style={styles.keyboard}>
+        <View style={styles.keyRow}>
+          {alphabet.slice(0, 10).map(letter => (
+            <TouchableOpacity
+              key={letter}
+              style={[styles.key, { backgroundColor: getLetterColor(letter) }]}
+              onPress={() => handleLetterPress(letter)}
+              disabled={gameOver || won}
+            >
+              <Text style={styles.keyText}>{letter}</Text>
+            </TouchableOpacity>
           ))}
         </View>
-      )}
-
-      <Button title="Save quiz" onPress={addQuiz} />
-      <Button title="Back" onPress={() => setView('home')} color="#555" />
-    </ScrollView>
-  );
-
-  const renderQuiz = () => {
-    const q = activeQuiz.questions[currentQuestionIndex];
-    return (
-      <View style={styles.container}>
-        <Text style={styles.heading}>{activeQuiz.title}</Text>
-        <Text style={styles.question}>{q.question}</Text>
-        {q.options.map(option => (
-          <TouchableOpacity key={option} style={styles.optionButton} onPress={() => handleAnswer(option)}>
-            <Text style={styles.optionText}>{option}</Text>
-          </TouchableOpacity>
-        ))}
-        <Text style={styles.score}>Score: {score}/{activeQuiz.questions.length}</Text>
-      </View>
-    );
-  };
-
-  const renderRank = () => (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Quiz Results</Text>
-      {lastResult ? (
-        <View style={styles.resultBox}>
-          <Text style={styles.resultText}>Quiz: {lastResult.quizTitle}</Text>
-          <Text style={styles.resultText}>Score: {lastResult.correct} / {lastResult.total}</Text>
-          <Text style={styles.resultText}>Accuracy: {lastResult.percent}%</Text>
-          <Text style={styles.resultText}>Rank: {lastResult.rank}</Text>
+        <View style={styles.keyRow}>
+          {alphabet.slice(10, 19).map(letter => (
+            <TouchableOpacity
+              key={letter}
+              style={[styles.key, { backgroundColor: getLetterColor(letter) }]}
+              onPress={() => handleLetterPress(letter)}
+              disabled={gameOver || won}
+            >
+              <Text style={styles.keyText}>{letter}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
-      ) : (
-        <Text style={styles.resultText}>No results yet.</Text>
-      )}
-      <Button title="Back to home" onPress={() => setView('home')} />
-      <Button title="Try another quiz" onPress={() => setView('home')} color="#4a5568" />
-    </View>
-  );
+        <View style={[styles.keyRow, { justifyContent: 'center', gap: 8 }]}>
+          {alphabet.slice(19).map(letter => (
+            <TouchableOpacity
+              key={letter}
+              style={[styles.key, { backgroundColor: getLetterColor(letter) }]}
+              onPress={() => handleLetterPress(letter)}
+              disabled={gameOver || won}
+            >
+              <Text style={styles.keyText}>{letter}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={[styles.key, styles.backspaceKey]} onPress={handleBackspace}>
+            <Text style={styles.keyText}>⌫</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
-  const renderAbout = () => (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
-      <Text style={styles.heading}>About This Quiz App</Text>
-      <Text style={styles.aboutText}>
-        This is a React Native quiz app for programming languages. You can choose from prebuilt quizzes in JavaScript,
-        Python, HTML & CSS, and React Native. You can also create your own quiz with a custom question and answers.
-      </Text>
-      <Text style={styles.aboutText}>
-        Built without TypeScript, only React Native components and simple state management using useState. No backend
-        connection is needed for this demo version.
-      </Text>
-      <Text style={styles.aboutText}>
-        Use the "Create a new quiz" button to add your own quiz instantly, and tap a quiz card to play.
-      </Text>
-      <Button title="Back to home" onPress={() => setView('home')} />
-    </ScrollView>
+      {/* Action Buttons */}
+      <View style={styles.buttonGroup}>
+        <TouchableOpacity
+          style={[styles.button, !gameOver && !won && styles.buttonDisabled]}
+          onPress={handleSubmit}
+          disabled={gameOver || won}
+        >
+          <Text style={styles.buttonText}>SUBMIT</Text>
+        </TouchableOpacity>
+        {(gameOver || won) && (
+          <TouchableOpacity style={[styles.button, styles.resetButton]} onPress={resetGame}>
+            <Text style={styles.buttonText}>NEW GAME</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </SafeAreaView>
   );
-
-  return view === 'home'
-    ? renderHome()
-    : view === 'create'
-    ? renderCreate()
-    : view === 'about'
-    ? renderAbout()
-    : view === 'rank'
-    ? renderRank()
-    : renderQuiz();
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 18, backgroundColor: '#1a202c' },
-  heading: { fontSize: 26, fontWeight: 'bold', marginBottom: 12, textAlign: 'center', color: '#f8fafc' },
-  subheading: { fontSize: 18, marginTop: 16, marginBottom: 8, color: '#cbd5e1' },
-  quizCard: { backgroundColor: '#2d3748', marginBottom: 10, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#4a5568' },
-  quizTitle: { fontSize: 20, fontWeight: '700', color: '#e2e8f0' },
-  questionItem: { backgroundColor: '#1f2937', padding: 10, borderRadius: 8, marginTop: 6 },
-  input: { borderWidth: 1, borderColor: '#4a5568', borderRadius: 8, padding: 12, marginBottom: 10, backgroundColor: '#2d3748', color: '#e2e8f0' },
-  question: { fontSize: 20, marginBottom: 16, textAlign: 'center', color: '#edf2f7', fontWeight: '600' },
-  quizMeta: { color: '#a0aec0', marginTop: 4 },
-  resultBox: { backgroundColor: '#2a4365', borderRadius: 10, padding: 14, marginBottom: 16 },
-  resultText: { color: '#e2e8f0', fontSize: 18, marginBottom: 6 },
-  optionButton: { backgroundColor: '#38b2ac', marginBottom: 10, borderRadius: 8, padding: 14 },
-  optionText: { color: '#1a202c', fontWeight: '700', textAlign: 'center', fontSize: 16 },
-  score: { marginTop: 18, fontSize: 17, textAlign: 'center', color: '#9ae6b4' },
-  aboutText: { color: '#e2e8f0', fontSize: 16, marginBottom: 12, lineHeight: 24 },
+  container: {
+    flex: 1,
+    backgroundColor: '#121213',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#fff',
+    marginBottom: 20,
+    letterSpacing: 4,
+  },
+  board: {
+    alignSelf: 'center',
+    marginBottom: 24,
+    gap: 6,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  tile: {
+    width: 50,
+    height: 50,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#3a3a3c',
+  },
+  tileText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  message: {
+    textAlign: 'center',
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 12,
+    fontWeight: '500',
+  },
+  keyboard: {
+    marginBottom: 20,
+    gap: 8,
+  },
+  keyRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  key: {
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    borderRadius: 4,
+    minWidth: 32,
+    alignItems: 'center',
+  },
+  backspaceKey: {
+    paddingHorizontal: 12,
+  },
+  keyText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+    marginTop: 'auto',
+    marginBottom: 12,
+  },
+  button: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#6aaa64',
+    borderRadius: 6,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  resetButton: {
+    backgroundColor: '#3a3a3c',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  inputContainer: {
+    marginBottom: 12,
+  },
+  label: {
+    color: '#fff',
+    marginBottom: 4,
+    fontSize: 14,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#444',
+    padding: 10,
+    borderRadius: 6,
+    backgroundColor: '#1e1b16',
+    color: '#fff',
+    width: '100%',
+  },
+  authError: {
+    color: '#ff5555',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  loginButton: {
+    backgroundColor: '#1f8cff',
+  },
 });
+
 
